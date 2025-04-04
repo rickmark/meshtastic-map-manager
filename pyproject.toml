@@ -1,0 +1,26 @@
+[project]
+name = "meshmapper"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Rick Mark",email = "rickmark@outlook.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+
+dependencies = [
+    "requests>=2",
+    "tqdm>=4",
+    "PyYAML>=6",
+    "Pillow>=11",
+    "python-dotenv",
+    "joblib",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+download = "meshmapper.download:main"
+sync = "meshmapper.syncmaps:main"
