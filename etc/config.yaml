@@ -16,19 +16,19 @@ zones:
   US:
     zoom:
       out: 7
-      in: 13
+      in: 12
     regions:
       - 49.246676,-124.848974,24.396308,-66.93457
   PNW:
     zoom:
       out: 11
-      in: 14
+      in: 15
     regions:
       - 49.002494,-124.848974,45.543541,-116.916031
   Spokane:
     zoom:
       out: 14
-      in: 20
+      in: 19
     regions:
       - 47.737, -117.635, 47.614, -117.387
   Seattle:
@@ -40,19 +40,19 @@ zones:
   Montana:
     zoom:
       out: 11
-      in: 16
+      in: 15
     regions:
       - 49.002494,-116.916031,44.358221,-104.039648
   Colorado:
     zoom:
       out: 11
-      in: 16
+      in: 15
     regions:
       - 33.9262,-109.0563,41.0027,-102.0390
   Wyoming:
     zoom:
       out: 11
-      in: 16
+      in: 15
     regions:
       - 45.000,-111.016,41.000,-104.000
   Japan:

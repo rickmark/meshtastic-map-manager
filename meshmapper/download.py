@@ -285,7 +285,7 @@ class MeshtasticTileDownloader:
             regions = processing_zone[zone]['regions']
             zoom_out = processing_zone[zone]['zoom']['out']
             zoom_in = processing_zone[zone]['zoom']['in']
-            zoom_levels = range(zoom_out, zoom_in)
+            zoom_levels = range(zoom_out, zoom_in + 1)
             logging.info(f"Obtaining zone [{zone}] [zoom: {zoom_out} → {zoom_in}] regions: {regions}")
             await self.obtain_tiles(regions=regions, zoom_levels=zoom_levels)
             logging.info(f"Finished with zone {zone}")

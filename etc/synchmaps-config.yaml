@@ -1,20 +1,5 @@
 sync:
   # Copy Portugal ones by Pete to my default folder (would also avoid re-downloading possible matches)
-  - source: ~/Downloads/Telegram Desktop/pt-dark-matter-brown/maps/dark-matter-brown
-    destination: ~/Desktop/maps/geoapify/dark-matter-brown
+  - source: ~/Desktop/maps/thunderforest/atlas
+    destination: /Volumes/MAPS/maps/atlas
 
-  # T-deck card named TDECKTEST
-  - source: ~/Desktop/maps/geoapify/dark-matter-brown
-    destination: /media/YourUserName/TDECKTEST/maps/dark-matter-brown
-
-  # T-deck plus card named TDPDROB
-  - source: ~/Desktop/maps/geoapify/dark-matter-brown
-    destination: /media/YourUserName/TDPDROB/maps/dark-matter-brown
-
-  # never tested on Windows but I guess it should work...
-  - source: C:/Bindous/Users/TheUserOrSo/Desktop/maps/geoapify/dark-matter-brown
-    destination: 'F:\dark-matter-brown'
-
-  # might wanna save your exported keys?
-  - source: /media/YourUserName/TDPDROB/keys
-    destination: ~/backups/yourDeviceName/keys

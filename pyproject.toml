@@ -23,4 +23,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 download = "meshmapper.download:main"
-sync = "meshmapper.syncmaps:main"
+sync = "meshmapper.synchmaps:main"
