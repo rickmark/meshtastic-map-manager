@@ -1,17 +1,20 @@
+import asyncio
+import dataclasses
 import logging
-from requests import get
-from math import floor, pi, tan, cos, log
-from tqdm import tqdm
-from yaml import safe_load
+import os
+from concurrent.futures import as_completed
+from io import BytesIO
 from os import environ, makedirs
+from math import floor, pi, tan, cos, log
 from os.path import join as join_path, expanduser, exists
 from sys import exit
+from typing import Iterator
+import concurrent.futures
 from PIL import Image
-from io import BytesIO
-import os
-import sys
-import joblib
 from dotenv import load_dotenv
+from requests import get
+from tqdm import tqdm
+from yaml import safe_load
 
 '''
 Authors:
@@ -33,6 +36,12 @@ Base code from: Tile downloader https://github.com/fistulareffigy/MTD-Script/blo
 
 MODULE_PATH = os.path.dirname(__file__)
 ENV_PATH = os.path.join(MODULE_PATH, '../.env')
+
+@dataclasses.dataclass
+class Tile:
+    x: int
+    y: int
+    zoom: int
 
 class MeshtasticTileDownloader:
     def __init__(self, output_directory: str):
@@ -124,16 +133,7 @@ class MeshtasticTileDownloader:
     def in_debug_mode():
         return environ.get("DEBUG", "false")
 
-    @staticmethod
-    def long_to_tile_x(lon, zoom):
-        xy_tiles_count = 2 ** zoom
-        return int(floor(((lon + 180.0) / 360.0) * xy_tiles_count))
 
-    @staticmethod
-    def lat_to_tile_y(lat, zoom):
-        xy_tiles_count = 2 ** zoom
-        return int(floor(((1.0 - log(tan((lat * pi) / 180.0) + 1.0 / cos(
-            (lat * pi) / 180.0)) / pi) / 2.0) * xy_tiles_count))
 
     @staticmethod
     def load_image_bytes(image_bytes):
@@ -233,36 +233,50 @@ class MeshtasticTileDownloader:
         else:
             logging.debug(f"[{tile_path}] file already exists. Skipping... {redacted_url}")
 
+    @staticmethod
+    def long_to_tile_x(lon: float, zoom: int) -> int:
+        xy_tiles_count = 2 ** zoom
+        return int(floor(((lon + 180.0) / 360.0) * xy_tiles_count))
+
+    @staticmethod
+    def lat_to_tile_y(lat: float, zoom: int) -> int:
+        xy_tiles_count = 2 ** zoom
+        return int(floor(((1.0 - log(tan((lat * pi) / 180.0) + 1.0 / cos(
+            (lat * pi) / 180.0)) / pi) / 2.0) * xy_tiles_count))
+
     # renamed from main
-    def obtain_tiles(self, regions: list, zoom_levels: range):
-        total_tiles = 0
+    async def obtain_tiles(self, regions: list, zoom_levels: range) -> None:
+        tiles = [
+            tile
+            for zoom in zoom_levels
+            for region in regions
+            for tile in self.tiles_in(region, zoom)
+        ]
 
-        for zoom in zoom_levels:
-            for region in regions:
-                min_lat, min_lon, max_lat, max_lon = list(map(float, region.split(",")))
-                start_x = self.long_to_tile_x(min_lon, zoom)
-                end_x = self.long_to_tile_x(max_lon, zoom)
-                start_y = self.lat_to_tile_y(max_lat, zoom)
-                end_y = self.lat_to_tile_y(min_lat, zoom)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=128) as executor:
+            futures = [
+                executor.submit(self.download_tile, tile.zoom, tile.x, tile.y)
+                for tile in tiles
+            ]
 
-                total_tiles += (max(start_x, end_x) + 1 - min(start_x, end_x)) * (
-                        max(start_y, end_y) + 1 - min(start_y, end_y))
+            with tqdm(total=len(tiles), desc="Downloading tiles") as pbar:
+                for future in as_completed(futures):
+                    pbar.update(1)
 
-        with tqdm(total=total_tiles, desc="Downloading tiles") as pbar:
-            for zoom in zoom_levels:
-                for region in regions:
-                    min_lat, min_lon, max_lat, max_lon = list(map(float, region.split(",")))
-                    start_x = self.long_to_tile_x(min_lon, zoom)
-                    end_x = self.long_to_tile_x(max_lon, zoom)
-                    start_y = self.lat_to_tile_y(max_lat, zoom)
-                    end_y = self.lat_to_tile_y(min_lat, zoom)
 
-                    for x in range(min(start_x, end_x), max(start_x, end_x) + 1):
-                        for y in range(min(start_y, end_y), max(start_y, end_y) + 1):
-                            self.download_tile(zoom=zoom, x=x, y=y)
-                            pbar.update(1)
 
-    def run(self):
+    def tiles_in(self, region: str, zoom: int) -> Iterator[Tile]:
+        min_lat, min_lon, max_lat, max_lon = list(map(float, region.split(",")))
+        start_x = self.long_to_tile_x(min_lon, zoom)
+        end_x = self.long_to_tile_x(max_lon, zoom)
+        start_y = self.lat_to_tile_y(max_lat, zoom)
+        end_y = self.lat_to_tile_y(min_lat, zoom)
+
+        for x in range(min(start_x, end_x), max(start_x, end_x) + 1):
+            for y in range(min(start_y, end_y), max(start_y, end_y) + 1):
+                yield Tile(x, y, zoom)
+
+    async def run(self) -> bool:
         if not self.is_valid_provider:
             logging.critical(f"Unknown provider '{self.tile_provider}'")
             return False
@@ -273,14 +287,14 @@ class MeshtasticTileDownloader:
             zoom_in = processing_zone[zone]['zoom']['in']
             zoom_levels = range(zoom_out, zoom_in)
             logging.info(f"Obtaining zone [{zone}] [zoom: {zoom_out} → {zoom_in}] regions: {regions}")
-            self.obtain_tiles(regions=regions, zoom_levels=zoom_levels)
+            await self.obtain_tiles(regions=regions, zoom_levels=zoom_levels)
             logging.info(f"Finished with zone {zone}")
         zones = ", ".join(self.zones)
         logging.info(f"Finished processing zones: {zones}")
         return True
 
 
-def main():
+async def do():
     if exists(ENV_PATH):
         load_dotenv()
     if str(environ.get("DEBUG", "false")).lower() == "true":
@@ -309,9 +323,12 @@ def main():
         logging.info("If your provider doesn't need an API Key, set the env var with any content.")
         exit(1)
 
-    if not app.run():
+    if not await app.run():
         logging.info("Program finished with errors.")
         exit(1)
 
     logging.info("Program finished")
     exit(0)
+
+def main():
+    asyncio.run(do())

@@ -16,7 +16,7 @@ zones:
   US:
     zoom:
       out: 7
-      in: 11
+      in: 13
     regions:
       - 49.246676,-124.848974,24.396308,-66.93457
   PNW:
@@ -34,37 +34,37 @@ zones:
   Seattle:
     zoom:
       out: 14
-      in: 20
+      in: 18
     regions:
       - 47.734, -122.515, 47.491, -122.224
   Montana:
     zoom:
       out: 11
-      in: 14
+      in: 16
     regions:
       - 49.002494,-116.916031,44.358221,-104.039648
-#  Vigo (Spain):
-#    zoom:
-#      out: 10
-#      in: 16
-#    regions:
-#      - 42.24285,-8.78276,42.20617,-8.67122
-#  Coruña (Spain):
-#    zoom:
-#      out: 10
-#      in: 14
-#    regions:
-#      - 43.39103,-8.45354,43.33636,-8.37160
-#  Portugal:
-#    zoom:
-#      out: 1
-#      in: 13
-#    regions:
-#      - 42.28,-9.96,36.79,-6.50    # Continente
-#      - 39.90,-31.47,36.89,-24.95  # Acores
-#      - 33.27,-17.40,32.32,-16.04  # Madeira
+  Colorado:
+    zoom:
+      out: 11
+      in: 16
+    regions:
+      - 33.9262,-109.0563,41.0027,-102.0390
+  Wyoming:
+    zoom:
+      out: 11
+      in: 16
+    regions:
+      - 45.000,-111.016,41.000,-104.000
+  Japan:
+    zoom:
+      out: 1
+      in: 14
+    regions:
+      - 31.0295791,129.408463,45.5514834,145.543137
 map:
-  style: atlas  # make it make sense with your provider!
-  provider: thunderforest  # valid providers: geoapify, thunderforest, cnig.es (or Spain; no token needed)
-  # reducing size is a good practice for small screens and easier on SDcard storage, faster copying and faster reading.
-  reduce: 12  # reduce image quality to 8bits from this level and on (default: 12. set 0 for no reduction; 1 for all )
+  # make it make sense with your provider!
+  style: atlas
+  # valid providers: geoapify, thunderforest, cnig.es (or Spain; no token needed)
+  provider: thunderforest
+  # reduce image quality to 8bits from this level and on (default: 12. set 0 for no reduction; 1 for all )
+  reduce: 12
