@@ -1,5 +1,5 @@
 sync:
   # Copy Portugal ones by Pete to my default folder (would also avoid re-downloading possible matches)
-  - source: ~/Desktop/maps/thunderforest/atlas
-    destination: /Volumes/MAPS/maps/atlas
+  - source: /media/psf/Home/Desktop/maps/thunderforest/atlas
+    destination: /mnt/MAPS/maps/atlas
 

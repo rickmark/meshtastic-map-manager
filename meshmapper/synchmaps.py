@@ -6,6 +6,7 @@ from os import PathLike
 from yaml import safe_load
 from os.path import isdir, expanduser, isfile, join
 from time import sleep
+from tqdm import tqdm
 
 MODULE_PATH = os.path.dirname(__file__)
 
@@ -38,21 +39,35 @@ class FolderSync:
         if not self.verify_main_folders_exist():
             return False
 
+        self.print("Counting files...")
+        count = 0
         for root, dirs, files in os.walk(self.source):
-            relative_path = pathlib.Path(root).relative_to(self.source)
-            dest_path = self.destination / relative_path if relative_path != "." else pathlib.Path(self.destination)
+            count += len(files)
+        self.print(f"Found {count} files.")
 
-            if not isdir(dest_path):
-                self.print(f"Creating dir: {dest_path}")
-                os.makedirs(dest_path)
+        with tqdm(total=count) as pbar:
+            for root, dirs, files in os.walk(self.source):
+                relative_path = pathlib.Path(root).relative_to(self.source)
+                dest_path = self.destination / relative_path if relative_path != "." else pathlib.Path(self.destination)
 
-            for file in files:
-                src_file = pathlib.Path(root) / file
-                dest_file = dest_path / file
+                if not isdir(dest_path):
+                    os.makedirs(dest_path)
 
-                if not isfile(dest_file):  # Only copy if missing
-                    self.print(f"Copying missing file to {dest_file}")
-                    shutil.copy2(src_file, dest_file)  # copy2 preserves metadata
+                for file in files:
+                    src_file = pathlib.Path(root) / file
+                    dest_file = dest_path / file
+
+                    if isfile(dest_file):
+                         dest_stat = os.stat(dest_file)
+                         src_stat = os.stat(src_file)
+                         if src_stat.st_size != dest_stat.st_size:
+                             self.print(f"File '{src_file}' is corrupted.")
+                             os.remove(dest_file)
+
+                    if not isfile(dest_file):
+                        # Only copy if missing
+                        shutil.copy2(src_file, dest_file)  # copy2 preserves metadata
+                    pbar.update(1)
         return True
 
     def print(self, message: str):

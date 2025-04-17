@@ -155,6 +155,17 @@ files = [
 ]
 
 [[package]]
+name = "peewee"
+version = "3.17.9"
+description = "a little orm"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "peewee-3.17.9.tar.gz", hash = "sha256:fe15cd001758e324c8e3ca8c8ed900e7397c2907291789e1efc383e66b9bc7a8"},
+]
+
+[[package]]
 name = "pillow"
 version = "11.2.1"
 description = "Python Imaging Library (Fork)"
@@ -397,4 +408,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "8cf60ce1e5d585d234d8650a5df355ee6d69beb558ae98b25ffb09ce55408bbd"
+content-hash = "16d6123b51ba302ae1e11bd558e7273c6bcbb147071b3e90ba997077b7d23de9"

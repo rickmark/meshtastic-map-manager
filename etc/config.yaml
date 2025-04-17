@@ -15,52 +15,23 @@
 zones:
   US:
     zoom:
-      out: 7
-      in: 12
+      in: 14
     regions:
       - 49.246676,-124.848974,24.396308,-66.93457
-  PNW:
-    zoom:
-      out: 11
-      in: 15
-    regions:
-      - 49.002494,-124.848974,45.543541,-116.916031
-  Spokane:
+  States:
     zoom:
       out: 14
+      in: 17
+    regions:
+      - 49.002494,-124.848974,45.543541,-116.916031
+      - 41,-109,37,-102
+      - 48.34,-116.57,44.38,-103.55
+  Metros:
+    zoom:
       in: 19
     regions:
       - 47.737, -117.635, 47.614, -117.387
-  Seattle:
-    zoom:
-      out: 14
-      in: 18
-    regions:
       - 47.734, -122.515, 47.491, -122.224
-  Montana:
-    zoom:
-      out: 11
-      in: 15
-    regions:
-      - 49.002494,-116.916031,44.358221,-104.039648
-  Colorado:
-    zoom:
-      out: 11
-      in: 15
-    regions:
-      - 33.9262,-109.0563,41.0027,-102.0390
-  Wyoming:
-    zoom:
-      out: 11
-      in: 15
-    regions:
-      - 45.000,-111.016,41.000,-104.000
-  Japan:
-    zoom:
-      out: 1
-      in: 14
-    regions:
-      - 31.0295791,129.408463,45.5514834,145.543137
 map:
   # make it make sense with your provider!
   style: atlas
@@ -68,3 +39,6 @@ map:
   provider: thunderforest
   # reduce image quality to 8bits from this level and on (default: 12. set 0 for no reduction; 1 for all )
   reduce: 12
+database:
+  filename: ~/Desktop/maps/atlas/map.db
+  flat_files: ~/Desktop/maps/thunderforest/atlas/

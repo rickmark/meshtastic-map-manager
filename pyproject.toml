@@ -15,6 +15,7 @@ dependencies = [
     "Pillow>=11",
     "python-dotenv",
     "joblib",
+    "peewee (>=3.17.9,<4.0.0)",
 ]
 
 [build-system]
@@ -24,3 +25,4 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 download = "meshmapper.download:main"
 sync = "meshmapper.synchmaps:main"
+db_ingest = "meshmapper.database:main"

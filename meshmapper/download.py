@@ -34,8 +34,7 @@ Don't forge to check: https://www.openstreetmap.org/copyright
 Base code from: Tile downloader https://github.com/fistulareffigy/MTD-Script/blob/main/TileDL.py
 '''
 
-MODULE_PATH = os.path.dirname(__file__)
-ENV_PATH = os.path.join(MODULE_PATH, '../.env')
+from . import ENV_PATH, MODULE_PATH
 
 @dataclasses.dataclass
 class Tile:
@@ -103,7 +102,7 @@ class MeshtasticTileDownloader:
                     logging.debug("no zoom defined. will set to default zoom")
                     fixing_zone[zone]['zoom'] = {}
                 if 'in' not in fixing_zone[zone]['zoom']:
-                    fixing_zone[zone]['zoom']['in'] = 8
+                    fixing_zone[zone]['zoom']['in'] = 20
                 if 'out' not in fixing_zone[zone]['zoom']:
                     fixing_zone[zone]['zoom']['out'] = 1
             if 'map' not in self.config:
@@ -253,7 +252,7 @@ class MeshtasticTileDownloader:
             for tile in self.tiles_in(region, zoom)
         ]
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=128) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=512) as executor:
             futures = [
                 executor.submit(self.download_tile, tile.zoom, tile.x, tile.y)
                 for tile in tiles
