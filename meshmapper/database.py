@@ -2,40 +2,37 @@ import os
 import re
 import sqlite3
 
+from typing import Optional
 from peewee import *
 from yaml import safe_load
 
-from . import ENV_PATH, MODULE_PATH
+from . import MODULE_PATH
 
 db = SqliteDatabase(':memory:')
 
 TILE_REGEX = re.compile(r".*/(?P<style>[a-z]+)/(?P<zoom>\d+)/(?P<x>\d+)/(?P<y>\d+)\.png")
 
 
-class Style(Model):
-    id = IntegerField(primary_key=True)
-    name = CharField(unique=True)
+class Metadata(Model):
+    name = TextField()
+    value = TextField()
 
     class Meta:
+        id = IntegerField(primary_key=True)
         database = db
+        db_table = 'metadata'
 
 
 class Tile(Model):
     id = BigIntegerField(primary_key=True)
-    style_id = ForeignKeyField(Style, backref='tiles')
-    zoom = IntegerField()
-    x = BigIntegerField()
-    y = BigIntegerField()
-    data = BlobField()
+    zoom_level = IntegerField()
+    tile_column = IntegerField()
+    tile_row = IntegerField()
+    tile_data = BlobField()
 
     class Meta:
         database = db
-
-        indexes = (
-            # Specify a unique multi-column index on from/to-user.
-            (('style_id', 'zoom', 'x', 'y'), True),
-        )
-
+        db_table = 'tiles'
 
 class MapDatabase:
     styles = {}
@@ -46,20 +43,24 @@ class MapDatabase:
         db.database = filename
 
     def create_tables(self):
-        self.db.create_tables([Style, Tile], safe=True)
+        self.db.create_tables([Tile], safe=True)
+        Tile.add_index(Tile.zoom_level, Tile.tile_column, Tile.tile_row, unique=True, name='tile_index')
 
+    @staticmethod
+    def get_setting(name) -> Optional[str]:
+        result = Metadata.select().where(Metadata.name == name).get()
+        if result is not None:
+            return result.value
+        return None
 
-    def get_style(self, style_id):
-        if style_id not in self.styles:
-            result = Style.select().where(Style.name == style_id).execute()
-            if result:
-                self.styles[style_id] = result[0].id
-            else:
-                result = Style.create(name=style_id)
-                self.styles[style_id] = result.id
-
-        return self.styles[style_id]
-
+    @staticmethod
+    def set_setting(name, value):
+        result = Metadata.select().where(Metadata.name == name).get()
+        if result is not None:
+            result.value = value
+            result.save()
+        else:
+            Metadata.create(name=name, value=value)
 
     def ingest(self, folder):
         for root, dirs, files in os.walk(folder):
@@ -74,13 +75,12 @@ class MapDatabase:
                     with open(os.path.join(root, filename), 'rb') as image:
                         data = image.read()
 
-                    style_id = self.get_style(style)
-                    result = Tile.select().where(Tile.style_id==style_id, Tile.zoom==int(zoom), Tile.x==int(x), Tile.y==int(y)).execute()
+                    result = Tile.select().where(Tile.zoom_level==int(zoom), Tile.tile_column==int(x), Tile.tile_row==int(y)).execute()
                     if result:
                         result.data = data
                         result.save()
                     else:
-                        result = Tile.create(style_id=style_id, zoom=int(zoom), x=int(x), y=int(y), data=data)
+                        result = Tile.create(zoom_level=int(zoom), tile_column=int(x), tile_rows=int(y), tile_data=data)
                         result.save()
                 else:
                     print(f"Skipping {fullpath}")
@@ -90,8 +90,10 @@ def main():
         config_path = os.path.join(MODULE_PATH, config_file)
         return safe_load(open(config_path, "r", encoding="utf-8"))
 
-    config = load_config()
-    orm = MapDatabase(os.path.expanduser(config['database']['filename']))
-    orm.create_tables()
-    orm.ingest(os.path.expanduser(config['database']['flat_files']))
-    orm.db.close()
+    for style, config in load_config()['config']:
+        orm = MapDatabase(os.path.expanduser(config['filename']))
+        orm.create_tables()
+        orm.set_setting('name', f"{style}.db")
+        orm.set_setting('format', 'png')
+        orm.ingest(os.path.expanduser(config['flat_files']))
+        orm.db.close()

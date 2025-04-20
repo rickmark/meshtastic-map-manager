@@ -40,5 +40,6 @@ map:
   # reduce image quality to 8bits from this level and on (default: 12. set 0 for no reduction; 1 for all )
   reduce: 12
 database:
-  filename: ~/Desktop/maps/atlas/map.db
-  flat_files: ~/Desktop/maps/thunderforest/atlas/
+  atlas:
+    filename: ~/Desktop/maps/atlas/map.db
+    flat_files: ~/Desktop/maps/thunderforest/atlas/
