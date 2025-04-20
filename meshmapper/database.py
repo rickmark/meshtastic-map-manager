@@ -43,19 +43,19 @@ class MapDatabase:
         db.database = filename
 
     def create_tables(self):
-        self.db.create_tables([Tile], safe=True)
+        self.db.create_tables([Metadata, Tile], safe=True)
         Tile.add_index(Tile.zoom_level, Tile.tile_column, Tile.tile_row, unique=True, name='tile_index')
 
     @staticmethod
     def get_setting(name) -> Optional[str]:
-        result = Metadata.select().where(Metadata.name == name).get()
+        result = Metadata.get_or_none(Metadata.name == name)
         if result is not None:
             return result.value
         return None
 
     @staticmethod
     def set_setting(name, value):
-        result = Metadata.select().where(Metadata.name == name).get()
+        result = Metadata.get_or_none(Metadata.name == name)
         if result is not None:
             result.value = value
             result.save()
@@ -80,7 +80,7 @@ class MapDatabase:
                         result.data = data
                         result.save()
                     else:
-                        result = Tile.create(zoom_level=int(zoom), tile_column=int(x), tile_rows=int(y), tile_data=data)
+                        result = Tile.create(zoom_level=int(zoom), tile_column=int(x), tile_row=int(y), tile_data=data)
                         result.save()
                 else:
                     print(f"Skipping {fullpath}")
@@ -90,7 +90,7 @@ def main():
         config_path = os.path.join(MODULE_PATH, config_file)
         return safe_load(open(config_path, "r", encoding="utf-8"))
 
-    for style, config in load_config()['config']:
+    for style, config in load_config()['database'].items():
         orm = MapDatabase(os.path.expanduser(config['filename']))
         orm.create_tables()
         orm.set_setting('name', f"{style}.db")
